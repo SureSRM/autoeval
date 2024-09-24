@@ -15,6 +15,8 @@ _This is a work in progress and not yet ready for production use. Expect **heavy
 
 Download the latest release from the releases page and put it in your path or in the same directory as the executable you want to test.
 
+Rename the executable to `autoeval` or `autoeval.exe` if you prefer.
+
 ## Usage
 
 `autoeval` is a command line tool that takes a single argument: the path to the lua script that defines the test scenarios.
