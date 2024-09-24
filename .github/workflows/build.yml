@@ -1,0 +1,53 @@
+name: Go Cross-platform Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Run tests
+        run: go test
+
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    needs: test
+
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Build for ${{ matrix.goos }}-${{ matrix.goarch }}
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o build/myapp-${{ matrix.goos }}-${{ matrix.goarch }}
+
+      - name: Create release and upload binaries
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
