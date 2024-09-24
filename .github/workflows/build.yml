@@ -43,7 +43,11 @@ jobs:
 
       - name: Build for ${{ matrix.goos }}-${{ matrix.goarch }}
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o build/myapp-${{ matrix.goos }}-${{ matrix.goarch }}
+        output="build/autoeval-${{ matrix.goos }}-${{ matrix.goarch }}"
+        if [ "${{ matrix.goos }}" == "windows" ]; then
+        output+=".exe"
+        fi
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$output"
 
       - name: Create release and upload binaries
         uses: softprops/action-gh-release@v1
