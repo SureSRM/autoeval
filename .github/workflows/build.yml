@@ -2,9 +2,8 @@ name: Go Cross-platform Build
 
 on:
   push:
-    branches:
-      - main
-
+    tags:
+      - "v*.*"
 jobs:
   test:
     runs-on: ubuntu-latest
