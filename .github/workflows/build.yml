@@ -1,5 +1,8 @@
 name: Go Cross-platform Build
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:
