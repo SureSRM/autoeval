@@ -17,7 +17,7 @@ func expectOutput(t *testing.T, process *TestScenario, expected string) {
 }
 
 func TestNewTestScenario(t *testing.T) {
-	process, err := NewTestScenario("./assets/tool.sh", []string{})
+	process, err := NewTestScenario("./examples/tool.sh", []string{})
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
