@@ -3,42 +3,45 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
-    "path/filepath"
 
 	"github.com/iyzyi/aiopty/pty"
 )
 
-
 type CLIProcess struct {
-	cmd string
-    args []string
-	pty *pty.Pty
+	cmd  string
+	args []string
+	pty  *pty.Pty
 }
 
 func newCLIProcess(command string, args []string) (*CLIProcess, error) {
-    // filepath.Abs() calls filepath.Clean() which translates the separators to the OS's default separator
-    cmd, err := filepath.Abs(command)
-    if err != nil {
-        return nil, err
-    }
+	// filepath.Abs() calls filepath.Clean() which translates the separators to the OS's default separator
+	if strings.Contains(command, "/") {
+		var err error
+		command, err = filepath.Abs(command)
 
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	process := &CLIProcess{
-		cmd: cmd,
+		cmd:  command,
 		args: args,
-		pty: nil,
+		pty:  nil,
 	}
 
 	return process, nil
 }
 
 func (p *CLIProcess) start() error {
-    pty, err := pty.OpenWithOptions(&pty.Options{
-        Path: p.cmd,
-        Args: append([]string{p.cmd}, p.args...),
-    })
+	pty, err := pty.OpenWithOptions(&pty.Options{
+		Path: p.cmd,
+		Args: append([]string{p.cmd}, p.args...),
+	})
 
 	if err != nil {
 		return err
@@ -81,7 +84,7 @@ func (pb *PeekBuffer) Peek() []byte {
 	pb.lock.Lock()
 	defer pb.lock.Unlock()
 
-    bytes := pb.buffer.Bytes()
+	bytes := pb.buffer.Bytes()
 	return bytes
 }
 

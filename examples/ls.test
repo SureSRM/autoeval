@@ -1,0 +1,5 @@
+launch("ls")
+
+expect("ls.test")
+
+stop()

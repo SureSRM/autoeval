@@ -24,23 +24,21 @@ var (
 )
 
 func launch(l *lua.State) int {
-    argn := l.Top()
-    if argn < 1 {
-        log.Fatalf("Command to execute must be provided.")
-    }
+	argn := l.Top()
+	if argn < 1 {
+		log.Fatalf("Command to execute must be provided.")
+	}
 
 	command := lua.CheckString(l, 1)
 
-    args := []string{}
-    for i := 2; i <= argn; i++ { 
-        arg := lua.CheckString(l, i)
-        args = append(args, arg)
-    }
+	args := []string{}
+	for i := 2; i <= argn; i++ {
+		arg := lua.CheckString(l, i)
+		args = append(args, arg)
+	}
 
 	fmt.Printf(B+"\nlaunch("+Y+"%s"+B+")\n", strings.Join(append([]string{command}, args...), B+", "+Y))
 
-	
-	
 	if process != nil {
 		process.Stop()
 	}
@@ -49,12 +47,12 @@ func launch(l *lua.State) int {
 	process, err = NewTestScenario(command, args)
 
 	if err != nil {
-        log.Fatalf("Error preparing the command: %v", err)
+		log.Fatalf("Error preparing the command: %v", err)
 	}
 
 	err = process.Launch()
 	if err != nil {
-        log.Fatalf("Error starting the command: %v", err)
+		log.Fatalf("Error starting the command: %v", err)
 	}
 
 	return 0
@@ -63,10 +61,10 @@ func launch(l *lua.State) int {
 func stop(_ *lua.State) int {
 	fmt.Printf(B + "stop()\n")
 
-    if process != nil {
-	    process.Stop()
-    }
-    process = nil
+	if process != nil {
+		process.Stop()
+	}
+	process = nil
 
 	return 0
 }
@@ -98,7 +96,7 @@ func expect(l *lua.State) int {
 			process.Seek(endIndex)
 
 			fmt.Printf(G + "OK\n")
-			return 0 
+			return 0
 		}
 
 		select {
@@ -130,7 +128,7 @@ func write(l *lua.State) int {
 
 	err := process.Write(input)
 	if err != nil {
-        log.Fatalf("Error writing to the process: %v", err)
+		log.Fatalf("Error writing to the process: %v", err)
 	}
 
 	return 0
@@ -138,13 +136,13 @@ func write(l *lua.State) int {
 
 func main() {
 	if len(os.Args) < 2 {
-        log.Fatal("The path to the Lua script must be provided as an argument.")
+		log.Fatal("The path to the Lua script must be provided as an argument.")
 	}
 
 	scriptPath := os.Args[1]
 	script, err := os.ReadFile(scriptPath)
 	if err != nil {
-        log.Fatalf("Could not read the Lua file: %v", err)
+		log.Fatalf("Could not read the Lua file: %v", err)
 	}
 
 	l := lua.NewState()
@@ -156,10 +154,10 @@ func main() {
 	l.Register("stop", stop)
 
 	if err := lua.DoString(l, string(script)); err != nil {
-        if strings.Contains(err.Error(), "attempt to call a nil value") {
-            log.Fatalf(R+"\nCommand not supported. Try updating to the latest version."+N)
-        }
+		if strings.Contains(err.Error(), "attempt to call a nil value") {
+			log.Fatalf(R + "\nCommand not supported. Try updating to the latest version." + N)
+		}
 
-        log.Fatalf(R+"\nError executing the Lua script: %v", err)
+		log.Fatalf(R+"\nError executing the Lua script: %v", err)
 	}
 }
