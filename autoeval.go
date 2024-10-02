@@ -60,7 +60,7 @@ func launch(l *lua.State) int {
 
 func stop(_ *lua.State) int {
 	fmt.Printf(B + "stop()\n")
-    fmt.Printf("Output:\n"+Y+"%s\n"+N, process.Dump())
+    // fmt.Printf("Output:\n"+Y+"%s\n"+N, process.Dump())
 
 	if process != nil {
 		process.Stop()
