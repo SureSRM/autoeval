@@ -60,6 +60,7 @@ func launch(l *lua.State) int {
 
 func stop(_ *lua.State) int {
 	fmt.Printf(B + "stop()\n")
+    fmt.Printf("Output:\n"+Y+"%s\n"+N, process.Dump())
 
 	if process != nil {
 		process.Stop()
@@ -79,6 +80,7 @@ func expect(l *lua.State) int {
 	points := lua.OptInteger(l, 2, 0)
 	timeout := lua.OptInteger(l, 3, 1000)
 
+    // parse the string to integer and multiply by time.Millisecond
 	timeoutDuration := time.Duration(timeout) * time.Millisecond
 
 	timeoutChan := time.After(timeoutDuration)

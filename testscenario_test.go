@@ -4,20 +4,27 @@ import (
 	"fmt"
 	"testing"
 	"time"
+    "strings"
 )
 
 func expectOutput(t *testing.T, process *TestScenario, expected string) {
-	time.Sleep(100 * time.Millisecond)
-	bytes := process.Peek()
-	process.Seek(len(bytes))
-	if string(bytes) != expected {
-		t.Errorf("Expected length %d, got %d", len(expected), len(bytes))
-		t.Errorf("Expected '%s', got '%s'", expected, string(bytes))
+	time.Sleep(200 * time.Millisecond)
+
+	output := string(process.Peek())
+
+	index := strings.Index(output, expected)
+	if index == -1 {
+        t.Errorf("Expected:\n%s\n", expected)
+        t.Errorf("Got:\n%s\n", output)
+        return
+	} else {
+        endIndex := index + len(expected)
+        process.Seek(endIndex)
 	}
 }
 
 func TestNewTestScenario(t *testing.T) {
-	process, err := NewTestScenario("./examples/tool.sh", []string{})
+	process, err := NewTestScenario("./examples/tool.sh", []string{"arg1"})
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -26,14 +33,14 @@ func TestNewTestScenario(t *testing.T) {
 	process.Launch()
 
 	expectOutput(t, process, "Name: ")
-
 	process.Write("AAA")
+	expectOutput(t, process, "Hello, AAA")
 
-	expectOutput(t, process, "AAA\r\nHello, AAA\r\nAge: ")
-
+	expectOutput(t, process, "Age: ")
 	process.Write("32")
+	expectOutput(t, process, "You are 32 years old")
 
-	expectOutput(t, process, "32\r\nYou are 32 years old\r\nYour arg was: \r\n")
+	expectOutput(t, process, "Your arg was: arg1")
 
 	process.Stop()
 }

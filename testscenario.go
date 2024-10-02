@@ -1,90 +1,30 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"path/filepath"
-	"strings"
 	"sync"
 	"time"
-
-	"github.com/iyzyi/aiopty/pty"
 )
 
-type CLIProcess struct {
-	cmd  string
-	args []string
-	pty  *pty.Pty
-}
-
-func newCLIProcess(command string, args []string) (*CLIProcess, error) {
-	// filepath.Abs() calls filepath.Clean() which translates the separators to the OS's default separator
-	if strings.Contains(command, "/") {
-		var err error
-		command, err = filepath.Abs(command)
-
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	process := &CLIProcess{
-		cmd:  command,
-		args: args,
-		pty:  nil,
-	}
-
-	return process, nil
-}
-
-func (p *CLIProcess) start() error {
-	pty, err := pty.OpenWithOptions(&pty.Options{
-		Path: p.cmd,
-		Args: append([]string{p.cmd}, p.args...),
-	})
-
-	if err != nil {
-		return err
-	}
-	p.pty = pty
-
-	return nil
-}
-
-func (p *CLIProcess) read() ([]byte, error) {
-	buf := make([]byte, 1024)
-	n, err := p.pty.Read(buf)
-	if err != nil {
-		return nil, err
-	}
-	return buf[:n], nil
-}
-
-func (p *CLIProcess) Write(input string) error {
-	_, err := p.pty.Write([]byte(input + "\n"))
-	return err
-}
-
-func (p *CLIProcess) Stop() error {
-	return p.pty.Close()
-}
 
 type PeekBuffer struct {
 	lock   sync.Mutex
-	buffer bytes.Buffer
+	buffer []byte
+
+	pointer int
 }
 
 func (pb *PeekBuffer) add(data []byte) {
 	pb.lock.Lock()
 	defer pb.lock.Unlock()
-	pb.buffer.Write(data)
+	pb.buffer = append(pb.buffer, data...)
 }
 
 func (pb *PeekBuffer) Peek() []byte {
 	pb.lock.Lock()
 	defer pb.lock.Unlock()
 
-	bytes := pb.buffer.Bytes()
+	bytes := pb.buffer[pb.pointer:]
 	return bytes
 }
 
@@ -92,15 +32,18 @@ func (pb *PeekBuffer) Seek(n int) error {
 	pb.lock.Lock()
 	defer pb.lock.Unlock()
 
-	if pb.buffer.Len() < n {
-		return fmt.Errorf("Error seeking: buffer length is %d, but tried to seek %d", pb.buffer.Len(), n)
+	if len(pb.buffer) < n {
+		return fmt.Errorf("Error seeking: buffer length is %d, but tried to seek %d", pb.buffer, n)
 	}
-
-	remaining := pb.buffer.Bytes()[n:]
-	pb.buffer.Reset()
-	pb.buffer.Write(remaining)
-
+	pb.pointer += n
 	return nil
+}
+
+func (pb *PeekBuffer) Dump() []byte {
+	pb.lock.Lock()
+	defer pb.lock.Unlock()
+
+	return pb.buffer
 }
 
 type TestScenario struct {
@@ -109,25 +52,31 @@ type TestScenario struct {
 }
 
 func (process *TestScenario) captureOutput() {
+	tick := time.Tick(100 * time.Millisecond)
+
 	for {
-		time.Sleep(10 * time.Millisecond)
-		bytes, err := process.read()
-		if err == nil && len(bytes) > 0 {
-			process.add(bytes)
-		} else {
-			if err.Error() == "EOF" {
-				break
+		select {
+		case <-tick:
+			bytes, err := process.Read()
+			if err == nil && len(bytes) > 0 {
+				process.add(bytes)
+			} else {
+				if err.Error() == "EOF" {
+                    // TODO: Implement EOF detection for Win and Linux
+					// process.add([]byte("<EOF>"))
+					break
+				}
+				// TODO: Check if it is correct toignore Read() errors
+				// I want to ignore the empty response
+				// My asumption is that it does not matter if the process crashed,
+				// because I handle that independently
 			}
-			// TODO: Check if it is correct toignore Read() errors
-			// I want to ignore the empty response
-			// My asumption is that it does not matter if the process crashed,
-			// because I handle that independently
 		}
 	}
 }
 
 func (process *TestScenario) Launch() error {
-	err := process.start()
+	err := process.Start()
 	if err != nil {
 		return err
 	}
@@ -143,7 +92,8 @@ func NewTestScenario(command string, args []string) (*TestScenario, error) {
 
 	testScenario := &TestScenario{
 		PeekBuffer: PeekBuffer{},
-		CLIProcess: *process,
+		CLIProcess: process,
+
 	}
 
 	return testScenario, nil
