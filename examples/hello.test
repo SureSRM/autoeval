@@ -1,0 +1,12 @@
+launch('./hello.sh', 'arg1')
+
+expect('Name:')
+write('User')
+expect('Hello, User')
+
+expect('Age:')
+write('42')
+expect('You are 42 years old')
+expect('Your arg was: arg1')
+
+stop()

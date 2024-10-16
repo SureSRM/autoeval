@@ -44,3 +44,12 @@ func TestNewTestScenario(t *testing.T) {
 
 	process.Stop()
 }
+
+// TODO: Test what happens when the process ends early and you try to write to it
+
+// TODO: Test how to handle when the process exit code is not 0
+// Maybe I could check it before each instruction?
+
+
+
+

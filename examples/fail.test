@@ -1,0 +1,5 @@
+launch('./fail.sh')
+
+write('anything')
+-- expect('Error')
+stop()
