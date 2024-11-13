@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 type PeekBuffer struct {
 	lock   sync.Mutex
 	buffer []byte
@@ -46,12 +45,12 @@ func (pb *PeekBuffer) Dump() []byte {
 	return pb.buffer
 }
 
-type TestScenario struct {
+type ProcessBuffer struct {
 	PeekBuffer
 	CLIProcess
 }
 
-func (process *TestScenario) captureOutput() {
+func (process *ProcessBuffer) captureOutput() {
 	tick := time.Tick(100 * time.Millisecond)
 
 	for {
@@ -62,7 +61,7 @@ func (process *TestScenario) captureOutput() {
 				process.add(bytes)
 			} else {
 				if err.Error() == "EOF" {
-                    // TODO: Implement EOF detection for Win and Linux
+					// TODO: Implement EOF detection for Win and Linux
 					// process.add([]byte("<EOF>"))
 					break
 				}
@@ -75,7 +74,7 @@ func (process *TestScenario) captureOutput() {
 	}
 }
 
-func (process *TestScenario) Launch() error {
+func (process *ProcessBuffer) Launch() error {
 	err := process.Start()
 	if err != nil {
 		return err
@@ -84,17 +83,16 @@ func (process *TestScenario) Launch() error {
 	return nil
 }
 
-func NewTestScenario(command string, args []string) (*TestScenario, error) {
+func NewProcessBuffer(command string, args []string) (*ProcessBuffer, error) {
 	process, err := newCLIProcess(command, args)
 	if err != nil {
 		return nil, err
 	}
 
-	testScenario := &TestScenario{
+	processBuffer := &ProcessBuffer{
 		PeekBuffer: PeekBuffer{},
 		CLIProcess: process,
-
 	}
 
-	return testScenario, nil
+	return processBuffer, nil
 }

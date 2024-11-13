@@ -59,7 +59,7 @@ func (p *LinuxCLIProcess) Read() ([]byte, error) {
 }
 
 func (p *LinuxCLIProcess) Write(input string) error {
-    _, err := p.pty.Write([]byte(input + "\n"))
+	_, err := p.pty.Write([]byte(input + "\n"))
 	return err
 }
 

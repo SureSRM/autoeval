@@ -29,8 +29,8 @@ jobs:
 
     strategy:
       matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64, arm64]
+        goos: [linux, windows]
+        goarch: [amd64]
 
     steps:
       - name: Checkout code
@@ -51,7 +51,7 @@ jobs:
           if [ "${{ matrix.goos }}" == "windows" ]; then
           output+=".exe"
           fi
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$output"
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$output" autoeval
 
       - name: Create release and upload binaries
         uses: softprops/action-gh-release@v1

@@ -2,29 +2,29 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
-    "strings"
 )
 
-func expectOutput(t *testing.T, process *TestScenario, expected string) {
+func expectOutput(t *testing.T, process *ProcessBuffer, expected string) {
 	time.Sleep(200 * time.Millisecond)
 
 	output := string(process.Peek())
 
 	index := strings.Index(output, expected)
 	if index == -1 {
-        t.Errorf("Expected:\n%s\n", expected)
-        t.Errorf("Got:\n%s\n", output)
-        return
+		t.Errorf("Expected:\n%s\n", expected)
+		t.Errorf("Got:\n%s\n", output)
+		return
 	} else {
-        endIndex := index + len(expected)
-        process.Seek(endIndex)
+		endIndex := index + len(expected)
+		process.Seek(endIndex)
 	}
 }
 
 func TestNewTestScenario(t *testing.T) {
-	process, err := NewTestScenario("./examples/tool.sh", []string{"arg1"})
+	process, err := NewProcessBuffer("./examples/tool.sh", []string{"arg1"})
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -49,7 +49,3 @@ func TestNewTestScenario(t *testing.T) {
 
 // TODO: Test how to handle when the process exit code is not 0
 // Maybe I could check it before each instruction?
-
-
-
-

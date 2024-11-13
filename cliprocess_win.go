@@ -4,7 +4,7 @@ package main
 
 import (
 	"io"
-    "os"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -26,11 +26,11 @@ func newCLIProcess(command string, args []string) (CLIProcess, error) {
 		var err error
 		command, err = filepath.Abs(command)
 
-        if _, err := os.Stat(command); os.IsNotExist(err) {
-            // If file does not exist, we add the .exe extension
-            // This is just for the Windows impl
-            command += ".exe"
-        }
+		if _, err := os.Stat(command); os.IsNotExist(err) {
+			// If file does not exist, we add the .exe extension
+			// This is just for the Windows impl
+			command += ".exe"
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func newCLIProcess(command string, args []string) (CLIProcess, error) {
 }
 
 func (p *WinCLIProcess) Start() error {
-    var err error
+	var err error
 
 	p.stdoutPipe, err = p.cmd.StdoutPipe()
 	if err != nil {
